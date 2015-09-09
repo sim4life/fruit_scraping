@@ -98,6 +98,31 @@ func getUri(sel *goquery.Selection) string {
 }
 
 /**
+ * This function creates a partial fruitItem object from the values passed
+ * as arguments. It also parses the values of unit price and URI. Lastly,
+ * it pretty prints the progress bar.
+ */
+func createFruitItem(title, priceStr string, uriSel *goquery.Selection, iter int) (*FruitItem, int) {
+
+	iter++
+	// Parsing float32 value
+	price := extractFloat32(priceStr)
+
+	prodUri := getUri(uriSel)
+
+	// Creating fruit item with partial values
+	fruitItem := &FruitItem{Title: title, UnitPrice: price, Size: "0kb", Description: "", DetailsUri: prodUri}
+	// Pretty-printing the progress of in channel processing
+	fmt.Print("Found stuff")
+	for i := 0; i < iter; i++ {
+		fmt.Print("=")
+	}
+	fmt.Println(">\n")
+
+	return fruitItem, iter
+}
+
+/**
  * This function scrapes the fruit item title and unit price from the downloaded
  * HTML document. First, it downloads the HTML doc from the given URI parameter.
  * Then, it scrapes the products' title, unit price and details URI info from the
@@ -106,9 +131,8 @@ func getUri(sel *goquery.Selection) string {
  */
 func fruitInitScrape(client *http.Client, uri string, fruitInQueue chan *FruitItem) {
 
-	var price Number
-	var addPrice Number
 	var iter int
+	var fruitItem *FruitItem
 
 	// Closing the In channel as it is not needed afterwards
 	defer close(fruitInQueue)
@@ -133,7 +157,6 @@ func fruitInitScrape(client *http.Client, uri string, fruitInQueue chan *FruitIt
 	doc.Find("ul.productLister li").Each(func(i int, s *goquery.Selection) {
 		product := s.Find(".productInner h3 a")
 		title := strings.TrimSpace(product.Text())
-		prodUri := getUri(product)
 
 		priceStr := strings.TrimSpace(s.Find(".productInner p.pricePerUnit").Text())
 
@@ -141,36 +164,16 @@ func fruitInitScrape(client *http.Client, uri string, fruitInQueue chan *FruitIt
 		addTitle := strings.TrimSpace(addProduct.Text())
 		addPriceStr := strings.TrimSpace(s.Find(".crossSellInner p.pricePerUnit").Text())
 
-		// Parsing float32 value
-		price = extractFloat32(priceStr)
-
-		iter++
 		// Creating fruit item with partial values
-		fruitItem := &FruitItem{Title: title, UnitPrice: price, Size: "0kb", Description: "", DetailsUri: prodUri}
-		// Pretty-printing the progress of in channel processing
-		fmt.Print("Found stuff")
-		for i := 0; i < iter; i++ {
-			fmt.Print("=")
-		}
-		fmt.Println(">\n")
+		fruitItem, iter = createFruitItem(title, priceStr, product, iter)
 
 		// Putting partially formed fruitItem on to fruitInQueue channel
 		fruitInQueue <- fruitItem
 
 		// These additional fruit items are the cross selling product items
 		if len(addTitle) > 0 {
-			addPrice = extractFloat32(addPriceStr)
-			addProdUri := getUri(addProduct)
-
-			iter++
 			// Creating fruit item with partial values
-			fruitItem := &FruitItem{Title: addTitle, UnitPrice: addPrice, Size: "0kb", Description: "", DetailsUri: addProdUri}
-			// Pretty-printing the progress of in channel processing
-			fmt.Print("Found stuff")
-			for i := 0; i < iter; i++ {
-				fmt.Print("=")
-			}
-			fmt.Println(">\n")
+			fruitItem, iter = createFruitItem(addTitle, addPriceStr, addProduct, iter)
 
 			// Putting partially formed fruitItem on to fruitInQueue channel
 			fruitInQueue <- fruitItem

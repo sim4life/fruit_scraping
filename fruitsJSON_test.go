@@ -149,7 +149,8 @@ func Test_getFruitsJSON(t *testing.T) {
 
 	totalPrice := Number(0)
 	for _, fruitItem := range fruits.Results {
-		fmt.Println("fruit.UnitPrice: ", fruitItem.UnitPrice)
+
+		fmt.Println("Title: ", fruitItem.Title, " UnitPrice: ", fruitItem.UnitPrice)
 		totalPrice += fruitItem.UnitPrice
 	}
 	fmt.Println("totalPrice is: ", totalPrice)
