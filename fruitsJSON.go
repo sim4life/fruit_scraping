@@ -42,7 +42,7 @@ func checkErr(err error) {
 	}
 }
 
-// Pretty pring the simulated progress bar
+// Pretty print the simulated progress bar
 func prettyProgess(start, mid, end string, max int) {
 
 	fmt.Print(start)
