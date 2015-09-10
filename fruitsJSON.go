@@ -42,6 +42,17 @@ func checkErr(err error) {
 	}
 }
 
+// Pretty pring the simulated progress bar
+func prettyProgess(start, mid, end string, max int) {
+
+	fmt.Print(start)
+	for i := 0; i < max; i++ {
+		fmt.Print(mid)
+	}
+	fmt.Println(end)
+
+}
+
 /**
  * This function parses a value string parameter and returns Number value
  * embedded within the string. It returns nil if it doesn't find any
@@ -113,11 +124,7 @@ func createFruitItem(title, priceStr string, uriSel *goquery.Selection, iter int
 	// Creating fruit item with partial values
 	fruitItem := &FruitItem{Title: title, UnitPrice: price, Size: "0kb", Description: "", DetailsUri: prodUri}
 	// Pretty-printing the progress of in channel processing
-	fmt.Print("Found stuff")
-	for i := 0; i < iter; i++ {
-		fmt.Print("=")
-	}
-	fmt.Println(">\n")
+	prettyProgess("Found stuff", "=", ">", iter)
 
 	return fruitItem, iter
 }
@@ -227,11 +234,7 @@ func fruitFinishScrape(client *http.Client, fruitInQueue, fruitOutQueue chan *Fr
 			fruitItem.Size = strconv.FormatFloat(float64(size), 'f', 2, 32) + "kb"
 
 			// Pretty-printing the progress of out channel processing
-			fmt.Print("<")
-			for i := 0; i < iter; i++ {
-				fmt.Print("=")
-			}
-			fmt.Println("FOUND more stuff\n")
+			prettyProgess("<", "=", "Found more stuff", iter)
 
 			// Putting completely formed fruitItem on to fruitOutQueue channel
 			fruitOutQueue <- fruitItem
@@ -256,11 +259,7 @@ func getFruitsJSON(fruitOutQueue chan *FruitItem) []byte {
 	for fruitItem := range fruitOutQueue {
 		iter++
 		// Pretty-printing the progress of out channel processing
-		fmt.Print("Thanks <")
-		for i := 0; i < iter; i++ {
-			fmt.Print("-")
-		}
-		fmt.Println("> stuff\n")
+		prettyProgess("Thanks <", "-", "> stuff", iter)
 
 		fruitsList = append(fruitsList, fruitItem)
 		totalPrice += fruitItem.UnitPrice
